@@ -1,0 +1,22 @@
+services: 
+  seratus:
+    container_name: seratus
+    build:
+      context: .
+      target: dev
+    restart: always
+    command: yarn dev
+    env_file:
+      - .env.local
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - 4000:4000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

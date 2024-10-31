@@ -1,0 +1,16 @@
+# To run the docker compose file: docker compose -f "docker-compose.prod.yml" up -d --build
+services: 
+  seratus:
+    container_name: seratus
+    build: .
+    restart: always #change if you don't want your container restarting
+    env_file:
+      - .env.production
+    ports:
+      - 4000:4000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
