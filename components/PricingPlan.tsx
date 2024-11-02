@@ -46,8 +46,8 @@ import { useUser } from "@clerk/nextjs";
 import { ToastAction } from "@/components/ui/toast"
 import { updateUserField } from "@/app/actions/User"
 import { fetchRoomByCreatedBy, insertRoom } from "@/app/actions/Room";
-import type { StoredData } from '@/app/types/storage';
 import { toast } from "@/hooks/use-toast";
+import { setData } from "@/lib/indexeddb"
 
 const plans = [
   {
@@ -55,71 +55,35 @@ const plans = [
     price: 0,
     priceText: "Free",
     maxPlayers: 6,
-    maxQuestions: 1,
-    timer: 5,
+    maxQuestions: 9,
     features: [
       { name: "Up to 6 players", included: true },
-      { name: "1 questions per topic", included: true },
-      { name: "Custom questions", included: false },
+      { name: "9 questions", included: true },
     ],
   },
   {
     name: "Pro",
     price: 25000,
     priceText: "25rb",
-    maxPlayers: 10,
-    maxQuestions: 2,
-    timer: 5,
+    maxPlayers: 20,
+    maxQuestions: 15,
     features: [
-      { name: "Up to 10 players", included: true },
-      { name: "2 questions per topic", included: true },
-      { name: "Custom questions", included: false },
+      { name: "Up to 20 players", included: true },
+      { name: "15 questions", included: true },
     ],
   },
   {
     name: "Premium",
     price: 75000,
     priceText: "75rb",
-    maxPlayers: 50,
-    maxQuestions: 3,
-    timer: 5,
+    maxPlayers: 60,
+    maxQuestions: 30,
     features: [
-      { name: "Up to 50 players", included: true },
-      { name: "3 questions per topic", included: true },
-      { name: "Custom questions", included: true },
+      { name: "Up to 60 players", included: true },
+      { name: "30 questions", included: true },
     ],
   },
 ]
-
-// Add IndexedDB utility functions at the top of the file
-const initDB = () => {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('quiz', 1);
-        
-        request.onerror = () => reject(request.error);
-        
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains('gameData')) {
-                db.createObjectStore('gameData');
-            }
-        };
-        
-        request.onsuccess = () => resolve(request.result);
-    });
-};
-
-const setData = async <K extends keyof StoredData>(key: K, value: StoredData[K]) => {
-    const db = await initDB() as IDBDatabase;
-    return new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(['gameData'], 'readwrite');
-        const store = transaction.objectStore('gameData');
-        const request = store.put(value, key);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-    });
-};
 
 export function PricingPlan({ message }: { message: string }) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
@@ -140,7 +104,6 @@ export function PricingPlan({ message }: { message: string }) {
     price: number, 
     maxPlayers: number, 
     maxQuestions: number, 
-    timer: number
   ) => {
     if (!user) {
       toast({
@@ -161,28 +124,28 @@ export function PricingPlan({ message }: { message: string }) {
             const data = await fetchRoomByCreatedBy(user.emailAddresses[0].emailAddress);
             
             if (data && data.status === 'waiting') {
-                router.push(`/select-country`);
+                router.push(`/create-room`);
             } else {
                 const roomData = await insertRoom({
                     createdBy: user?.emailAddresses[0].emailAddress ?? '',
                     totalPlayers: maxPlayers,
                     totalQuestions: maxQuestions,
-                    timer: timer,
                     orderId: '',
                 });
 
                 if (roomData) {
                     const roomId = roomData._id.toString();
+                    const roomCode = roomData.roomCode;
 
                     // Store game settings with proper typing
                     await setData('gameSettings', {
                         roomId,
+                        roomCode,
                         maxPlayers,
                         maxQuestions,
-                        timer
                     });
                     
-                    router.push(`/select-country`);
+                    router.push(`/create-room`);
                 }
             }
         } catch (error) {
@@ -266,7 +229,7 @@ export function PricingPlan({ message }: { message: string }) {
               "overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg",
               selectedPlan === plan.name ? "ring-2 ring-primary" : ""
             )}
-            onClick={() => handlePlanClick(plan.name, plan.price, plan.maxPlayers, plan.maxQuestions, plan.timer)}
+            onClick={() => handlePlanClick(plan.name, plan.price, plan.maxPlayers, plan.maxQuestions)}
           >
             <CardHeader className="bg-muted p-4">
               <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>

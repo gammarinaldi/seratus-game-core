@@ -6,52 +6,23 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { fetchRoomById, updateRoomDetails } from "@/app/actions/Room"
-import type { QuizSettings, GameSettings } from '@/app/types/quiz';
+import { fetchRoomById } from "@/app/actions/Room"
+import type { GameSettings } from '@/app/types/quiz';
 import { useUser } from "@clerk/nextjs"
-
-// Add IndexedDB utility functions
-const initDB = () => {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('quiz', 1);
-        
-        request.onerror = () => reject(request.error);
-        
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains('gameData')) {
-                db.createObjectStore('gameData');
-            }
-        };
-        
-        request.onsuccess = () => resolve(request.result);
-    });
-};
-
-const getData = async <T,>(key: string): Promise<T> => {
-    const db = await initDB() as IDBDatabase;
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['gameData'], 'readonly');
-        const store = transaction.objectStore('gameData');
-        const request = store.get(key);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result as T);
-    });
-};
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "./ui/toast"
+import { getQuizData } from '@/lib/indexeddb'
+import { updateRoomQuestions } from "@/app/actions/RoomQuestions"
 
 export default function CreateRoom() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false);
     const [maxPlayers, setMaxPlayers] = useState(0)
     const [maxQuestions, setMaxQuestions] = useState(0)
-    const [timer, setTimer] = useState(0)
-    const [country, setCountry] = useState('')
-    const [language, setLanguage] = useState('')
-    const [topics, setTopics] = useState<string[]>([])
-    const [roomId, setRoomId] = useState('')
     const [roomCode, setRoomCode] = useState('')
+    const [roomId, setRoomId] = useState('')
     const { user } = useUser();
+    const { toast } = useToast()
 
     useEffect(() => {
         if (!user) {
@@ -60,33 +31,17 @@ export default function CreateRoom() {
 
         const loadData = async () => {
             try {
-                const gameSettings = await getData<GameSettings>('gameSettings');
+                const gameSettings = await getQuizData<GameSettings>('gameSettings');
                 if (!gameSettings?.roomId) return;
 
                 // Get room details from database
                 const data = await fetchRoomById(gameSettings.roomId);
-                if (data.orderId.startsWith("pro")) {
-                    setMaxPlayers(10)
-                    setMaxQuestions(2)
-                } else if (data.orderId.startsWith("premium")) {
-                    setMaxPlayers(50)
-                    setMaxQuestions(3)
-                } else {
-                    setMaxPlayers(6)
-                    setMaxQuestions(1)
-                }
-
-                // Get other settings from IndexedDB
-                const quizSettings = await getData<QuizSettings>('quizSettings');
-                const quizTopics = await getData<string[]>('quizTopics');
+                setRoomId(gameSettings.roomId)
+                setMaxPlayers(data.totalPlayers)
+                setMaxQuestions(data.totalQuestions)
 
                 // Set local state
-                setRoomId(gameSettings.roomId)
                 setRoomCode(data.roomCode)
-                setTimer(data.timePerQuestion)
-                setCountry(quizSettings?.country ?? '')
-                setLanguage(quizSettings?.language ?? '')
-                setTopics(quizTopics ?? [])
             } catch (error) {
                 console.error('Error loading data:', error);
             }
@@ -97,62 +52,51 @@ export default function CreateRoom() {
 
     const handleCreateRoom = async () => {
         setIsLoading(true);      
-
         try {
-            // Construct room details
-            const roomDetails = {
-                roomId: roomId,
-                totalPlayers: maxPlayers,
-                totalQuestions: maxQuestions,
-                timePerQuestion: timer,
-                topics: topics,
-                country: country,
-                language: language,
-                userEmail: user?.emailAddresses[0].emailAddress
-            }
-
-            // Update room details in database
-            const data = await updateRoomDetails(roomDetails);
-            console.log("Room details updated:", data)
+            const data = await updateRoomQuestions(maxQuestions, roomId);
+            console.log("Room questions updated:", data)
             router.push(`/room/${roomCode}`);
         } catch (error) {
             console.error('Error creating room:', error);
+            toast({
+                variant: 'destructive',
+                title: "Oops!",
+                description: "Something went wrong. Please try again.",
+                duration: 3000,
+                action: <ToastAction altText="Try again" onClick={handleCreateRoom}>Try again</ToastAction>
+            });
         } finally {
             setIsLoading(false);
         }
     }
 
     return (
-        <Card>
+        <Card className="w-full max-w-md mx-auto">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold text-center">Confirm Quiz Setup</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <p className="text-md font-medium flex items-center">
-                        <span className="font-bold text-primary flex items-center text-md">
-                            <Check className="mr-2 h-6 w-6" /> 
+                        <span className="flex">
+                            <Check className="mr-2 h-5 w-5" /> 
                             Up to {maxPlayers} players
                         </span>
                     </p>
-                    <p className="text-sm font-medium flex items-center">
-                        <span className="font-bold text-primary flex items-center text-md">
-                            <Check className="mr-2 h-6 w-6" /> 
+                    <p className="text-md font-medium flex items-center">
+                        <span className="flex">
+                            <Check className="mr-2 h-5 w-5" /> 
                             Up to {maxQuestions} questions per topic
                         </span>
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-medium mb-2">Topics:</p>
+                    <p className="text-md font-medium mb-2">Topics:</p>
                     <div className="flex flex-wrap gap-2">
-                        {topics.map((topic, index) => (
-                            <Badge key={index} variant="secondary">{topic}</Badge>
-                        ))}
+                        <Badge variant="secondary">Penalaran Umum</Badge>
+                        <Badge variant="secondary">Pengetahuan Umum</Badge>
+                        <Badge variant="secondary">Pengetahuan Kuantitatif</Badge>
                     </div>
-                </div>
-                <div className="space-y-2">
-                    <p className="text-sm font-medium">Country: <span className="font-bold text-primary">{country}</span></p>
-                    <p className="text-sm font-medium">Language: <span className="font-bold text-primary">{language}</span></p>
                 </div>
             </CardContent>
             <CardContent className="space-y-4">

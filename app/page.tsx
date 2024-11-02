@@ -3,7 +3,6 @@ import { Welcome } from '@/components/Welcome';
 import { checkUser } from '@/app/actions/checkUser';
 import { fetchRoomByCreatedBy } from './actions/Room';
 import Lobby from '@/components/Lobby';
-import { redirect } from 'next/navigation';
 
 export default async function Home() {
   try {
@@ -12,7 +11,11 @@ export default async function Home() {
     if (user) {
       const room = await fetchRoomByCreatedBy(user.email);
       if (room?.status === "waiting") {
-        return <Lobby />
+        return (
+          <div className="flex flex-col items-center justify-center flex-1 bg-background p-4">
+            <Lobby />
+          </div>
+        )
       }
     }
 

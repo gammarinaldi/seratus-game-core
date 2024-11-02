@@ -10,53 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from './ui/toast'
 import { io, Socket } from 'socket.io-client'
-
-// Add IndexedDB utility functions
-const initDB = () => {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('quiz', 1);
-        
-        request.onerror = () => reject(request.error);
-        
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains('gameData')) {
-                db.createObjectStore('gameData');
-            }
-        };
-        
-        request.onsuccess = () => resolve(request.result);
-    });
-};
-
-// Add type for game data
-interface GameData {
-    roomCode: string;
-}
-
-const setData = async (key: string, value: GameData[keyof GameData]) => {
-    const db = await initDB() as IDBDatabase;
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['gameData'], 'readwrite');
-        const store = transaction.objectStore('gameData');
-        const request = store.put(value, key);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-    });
-};
-
-const getData = async (key: string) => {
-    const db = await initDB() as IDBDatabase;
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(['gameData'], 'readonly');
-        const store = transaction.objectStore('gameData');
-        const request = store.get(key);
-        
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
-    });
-};
+import { setData, getData } from '@/lib/indexeddb'
 
 export function JoinRoom() {
     const [roomCode, setRoomCode] = useState('')
@@ -111,6 +65,7 @@ export function JoinRoom() {
         }
         
         const cleanedRoomCode = roomCode.replace(/\s+/g, '')
+        const userId = user?.id
         const userEmail = user?.emailAddresses[0].emailAddress
         const userName = user?.fullName || 'Anonymous'
 
@@ -141,8 +96,12 @@ export function JoinRoom() {
 
             if (socketRef.current?.connected) {
                 socketRef.current.emit('join', { 
-                    roomCode: cleanedRoomCode, 
-                    player: userName 
+                    roomCode: cleanedRoomCode,
+                    player: {
+                        id: userId,
+                        email: userEmail,
+                        name: userName,
+                    }
                 });
 
                 console.log('Join message sent successfully');

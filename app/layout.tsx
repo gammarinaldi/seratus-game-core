@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Header } from "@/components/Header";
 import { ClientQuizProvider } from "@/components/ClientQuizProvider";
 import { Toaster } from "@/components/ui/toaster"
-
+import Footer from "@/components/Footer"
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -35,6 +35,7 @@ export default function RootLayout({
           <ClientQuizProvider>
               <Header />
               <main className="flex-1 flex flex-col">{children}</main>
+              <Footer />
               <Toaster />
           </ClientQuizProvider>
         </body>

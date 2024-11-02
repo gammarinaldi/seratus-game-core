@@ -18,7 +18,7 @@ export function RoleSelector() {
 
   const handleNext = async () => {
     if (user?.id && selectedRole) {
-      updateUserField(user.id, { role: selectedRole as 'host' | 'player' })
+      await updateUserField(user.id, { role: selectedRole as 'host' | 'player' })
     }
     
     if (selectedRole === "host") {

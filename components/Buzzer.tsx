@@ -7,36 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from './ui/toast'
 import { io, Socket } from 'socket.io-client'
 import { useRouter } from 'next/navigation'
-
-// Add IndexedDB utility functions
-const initDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('quiz', 1);
-    
-    request.onerror = () => reject(request.error);
-    
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains('gameData')) {
-        db.createObjectStore('gameData');
-      }
-    };
-    
-    request.onsuccess = () => resolve(request.result);
-  });
-};
-
-const getData = async (key: string) => {
-  const db = await initDB() as IDBDatabase;
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(['gameData'], 'readonly');
-    const store = transaction.objectStore('gameData');
-    const request = store.get(key);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-};
+import { getData } from '@/lib/indexeddb'
 
 export function Buzzer() {
   const [isBuzzed, setIsBuzzed] = useState(false)

@@ -1,6 +1,5 @@
 'use client'
 
-import { fetchRoomByCreatedBy } from "@/app/actions/Room"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
@@ -9,10 +8,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useRouter } from 'next/navigation'
 import { io, Socket } from 'socket.io-client'
 import { useToast } from "@/hooks/use-toast"
-import { ToastAction } from "./ui/toast"
+import { getQuizData, setData } from '@/lib/indexeddb';
+import { GameSettings, Player, SocketPlayer, UpdateEvent } from "@/app/types/quiz"
 
 export default function Lobby() {
-  const [players, setPlayers] = useState<string[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
   const [totalPlayers, setTotalPlayers] = useState(0)
   const [roomCode, setRoomCode] = useState('')
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -21,85 +21,24 @@ export default function Lobby() {
   const { toast } = useToast()
   const { user, isLoaded } = useUser()
 
-  const handleStartGame = () => {
-    console.log('Starting the game...');
-    setShowConfirmation(false);
-    
-    // Save players with initial scores to IndexedDB
-    const dbName = 'quiz';
-    const request = indexedDB.open(dbName, 1);
+  useEffect(() => {
+    if (!user) router.push('/');
+    if (user && isLoaded) {
+      console.log("User loaded");
 
-    request.onerror = (event) => {
-      console.error('IndexedDB error:', event);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to initialize game data. Please try again.",
+      // Get room ID from IndexedDB
+      getQuizData<GameSettings>('gameSettings').then(async (gameSettings) => {
+        if (!gameSettings?.roomId) return;  
+
+        setTotalPlayers(gameSettings.maxPlayers)
+        setRoomCode(gameSettings.roomCode) 
+      }).catch(error => {
+        console.error('Error getting room ID:', error);
       });
-    };
-
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains('players')) {
-        db.createObjectStore('players', { keyPath: 'name' });
-      }
-    };
-
-    request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const transaction = db.transaction(['players'], 'readwrite');
-      const store = transaction.objectStore('players');
-
-      // Clear existing players
-      store.clear();
-
-      // Add each player with initial score
-      players.forEach(players => {
-        store.add({ name: players, score: 0 });
-      });
-
-      // Continue with socket emission and navigation
-      if (socketRef.current?.connected) {
-        socketRef.current.emit('gameStart', {
-          roomCode: roomCode
-        });
-        
-        router.push('/quiz');
-      } else {
-        console.error('Socket is not connected. Cannot start the game.');
-        toast({
-          variant: "destructive",
-          title: "Connection Error",
-          description: "Failed to connect to the game server. Please try again.",
-        });
-      }
-    };
-  }
-
-  // Add this function to check if the start button should be disabled
-  const isStartButtonDisabled = () => {
-    return players.length === 0;
-  };
+    }
+  }, [isLoaded, user])
 
   useEffect(() => {
-    if (isLoaded && user?.emailAddresses[0].emailAddress) {
-      fetchRoomByCreatedBy(user.emailAddresses[0].emailAddress).then((roomDetails) => {
-        setTotalPlayers(roomDetails.totalPlayers)
-        setRoomCode(roomDetails.roomCode)
-        
-        if (roomDetails.players) {
-          const uniquePlayers = Array.from(new Set(roomDetails.players.filter((p: string) => p !== 'host')))
-          setPlayers(uniquePlayers as string[])
-        }
-      })
-    }
-  }, [isLoaded,user])
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/');
-    }
-
     const connectSocket = () => {
       console.log('Connecting to socket in Lobby...');
       socketRef.current = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || '');
@@ -109,7 +48,11 @@ export default function Lobby() {
         if (socketRef.current?.connected && roomCode) {
           socketRef.current.emit('join', {
             roomCode: roomCode,
-            player: 'host'
+            player: {
+              id: 'host',
+              name: 'host',
+              email: 'host'
+            }
           });
         }
       });
@@ -122,30 +65,72 @@ export default function Lobby() {
         console.error('Socket.IO connection closed in Lobby:', reason);
       });
 
-      socketRef.current.on('update', ({ roomCode: messageRoomCode, players: newPlayers }) => {
+      socketRef.current.on('update', ({ roomCode: messageRoomCode, players: newPlayers }: UpdateEvent) => {
         console.log('Received update in Lobby:', { messageRoomCode, newPlayers });
         if (messageRoomCode === roomCode) {
-          const uniquePlayers = Array.from(new Set(newPlayers.filter((p: string) => p !== 'host')))
-          setPlayers(uniquePlayers as string[]);
+          // Filter out host and any invalid entries
+          const uniquePlayers = newPlayers.filter((p: SocketPlayer) => 
+              p && p.id && p.id !== 'host' && p.name
+          );
+
+          console.log('Processed players:', uniquePlayers);
+          setPlayers(uniquePlayers as Player[]);
         }
       });
     };
 
-    if (roomCode) {
-      connectSocket();
-    } else {
-      toast({
-        variant: 'destructive',
-        description: "Something went wrong. Please try again.",
-        duration: 3000,
-        action: <ToastAction altText="Understood">Understood</ToastAction>
-      })
-    }
+    if (!user) router.push('/');
+    connectSocket();
 
     return () => {
       socketRef.current?.disconnect();
     };
   }, [roomCode]);
+
+  const handleStartGame = async () => {
+    console.log('Starting the game...');
+    setShowConfirmation(false);
+    
+    try {
+      // Store player data in IndexedDB with new structure
+      const playerData = players.map(player => ({
+        name: player.name,
+        id: player.id,
+        email: player.email,
+        score: 0,
+        timestamp: new Date().getTime()
+      }));
+
+      await setData('players', playerData);
+
+      if (socketRef.current?.connected) {
+        socketRef.current.emit('gameStart', {
+          roomCode: roomCode
+        });
+
+        router.push(`/quiz?roomCode=${roomCode}`);
+      } else {
+        console.error('Socket is not connected. Cannot start the game.');
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: "Failed to connect to the game server. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error('Error storing player data:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to initialize game data. Please try again.",
+      });
+    }
+  };
+
+  // Add this function to check if the start button should be disabled
+  const isStartButtonDisabled = () => {
+    return players.length === 0;
+  };
 
   if (!isLoaded) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -171,8 +156,13 @@ export default function Lobby() {
           </p>
           <div className="bg-gray-100 p-2 rounded max-h-40 overflow-y-auto">
             <ul className="list-none space-y-1">
-              {players.map((name: string, index: number) => (
-                <li key={index} className="text-sm text-center">{name}</li>
+              {players.map((player: Player) => (
+                <li 
+                  key={player.id}
+                  className="text-sm text-center"
+                >
+                  {player.name}
+                </li>
               ))}
             </ul>
           </div>

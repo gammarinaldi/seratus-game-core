@@ -44,11 +44,10 @@ export default function RoomCreated({ params }: { params: { roomCode: string } }
             {roomCode.match(/.{1,3}/g)?.join(' ') || roomCode}
           </div>
         </div>
-        <p className="text-sm text-center text-muted-foreground">Give code to your players</p>
-        <p className="text-xs text-center text-muted-foreground">The category & question will show randomly.</p>
+        <p className="text-sm text-center text-muted-foreground">Give the code to your players.</p>
       </CardContent>
       <CardFooter>
-        <Button className="w-full" onClick={() => router.push('/lobby')}>
+        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => router.push('/lobby')}>
           Go to Lobby
         </Button>
       </CardFooter>

@@ -32,12 +32,6 @@ export const updateUserField = async (userId: string, updateData: Partial<UserUp
         });
 
         const data = await response.json();
-
-        // If role is already set, return success without error
-        if (!response.ok && response.status === 500) {
-            return { success: true, message: 'Role already set' };
-        }
-
         return data;
     } catch (error) {
         console.error('[updateUserField] Error:', error);

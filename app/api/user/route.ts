@@ -33,9 +33,8 @@ export async function PUT(req: Request) {
             { $set: updateData }
         );
 
-        if (result.modifiedCount === 0) {
-            console.error('Failed to update user');
-            return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+        if (result.matchedCount === 1 && result.modifiedCount === 0) {
+            return NextResponse.json({ message: 'User does not need to be updated' }, { status: 200 });
         }
 
         return NextResponse.json({ message: 'User updated successfully' }, { status: 200 });

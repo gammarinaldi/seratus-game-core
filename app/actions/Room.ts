@@ -1,20 +1,6 @@
 import { fetchRoomCode } from "@/app/actions/RoomCode"
 import { getBaseUrl } from "@/lib/utils"
-
-interface RoomParams {
-    orderId: string;
-    createdBy: string;
-    totalPlayers?: number;
-    totalQuestions?: number;
-    players?: Player[];
-    timer?: number;
-}
-
-interface Player {
-    id: string;
-    name: string;
-    score?: number;
-}
+import { RoomParams } from "@/app/types/quiz"
 
 export const insertRoom = async (params: RoomParams) => {
     const roomCode = await fetchRoomCode();
@@ -97,6 +83,8 @@ export const fetchRoomByCreatedBy = async (createdBy: string) => {
 
 export const updateRoomDetails = async (roomDetails: Partial<RoomParams>) => {
     try {
+        console.log('Updating room with details:', roomDetails);
+
         const response = await fetch(`${getBaseUrl()}/api/room`, {
             method: 'PUT',
             headers: {
@@ -106,12 +94,13 @@ export const updateRoomDetails = async (roomDetails: Partial<RoomParams>) => {
         });
 
         if (!response.ok) {
-            console.error('Room update failed with status:', response.status);
-            throw new Error('Failed to update room');
+            const errorData = await response.json();
+            console.error('Room update failed:', errorData);
+            throw new Error(`Failed to update room: ${errorData.error || response.statusText}`);
         }
 
         const data = await response.json();
-        return data
+        return data;
     } catch (error) {
         console.error('Error updating room:', error);
         throw error;
