@@ -130,7 +130,6 @@ export function PricingPlan({ message }: { message: string }) {
                     createdBy: user?.emailAddresses[0].emailAddress ?? '',
                     totalPlayers: maxPlayers,
                     totalQuestions: maxQuestions,
-                    orderId: '',
                 });
 
                 if (roomData) {

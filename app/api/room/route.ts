@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: Request) {
   try {
-    const { createdBy, totalPlayers, totalQuestions, orderId, roomCode } = await req.json();
+    const { createdBy, totalPlayers, totalQuestions, roomCode } = await req.json();
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB_NAME as string);

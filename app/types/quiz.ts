@@ -36,11 +36,11 @@ export interface UpdateEvent {
 }
 
 export interface RoomParams {
-    roomId: string;
     createdBy: string;
     totalPlayers?: number;
     totalQuestions?: number;
     players?: Player[];
     timer?: number;
     status?: string;
+    roomId?: string;
 }
