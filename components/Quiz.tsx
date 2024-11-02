@@ -76,7 +76,7 @@ export default function Quiz() {
                 });
             });
         }
-    }, [isLoaded, user]);
+    }, [isLoaded, user, router, roomCode, currentQuestionIndex, toast]);
 
     useEffect(() => {
         const connectSocket = async () => {
@@ -108,7 +108,7 @@ export default function Quiz() {
         return () => {
         socketRef.current?.disconnect();
         };
-    }, [roomCode]);
+    }, [roomCode, user, router]);
 
     const resetQuestion = () => {
         setShowAnswer(false);

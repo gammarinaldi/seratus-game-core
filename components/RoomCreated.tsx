@@ -27,7 +27,7 @@ export default function RoomCreated({ params }: { params: { roomCode: string } }
         setUserRole(userData?.role || null);
       });
     }
-  }, [user]);
+  }, [user, router]);
 
   if (!roomCode || !user) return null;
   if (userRole === 'player') return <Buzzer />;

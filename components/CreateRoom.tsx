@@ -48,7 +48,7 @@ export default function CreateRoom() {
         };
 
         loadData();
-    }, [])
+    }, [user, router])
 
     const handleCreateRoom = async () => {
         setIsLoading(true);      

@@ -49,7 +49,6 @@ export async function POST(req: Request) {
       totalPlayers,
       totalQuestions,
       timePerQuestion: 10,
-      orderId: '',
       status: 'waiting',
       roomCode: roomCode,
       createdBy: createdBy,

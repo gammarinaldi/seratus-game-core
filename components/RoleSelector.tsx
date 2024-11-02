@@ -32,7 +32,7 @@ export function RoleSelector() {
     if (!user) {
       router.push('/');
     }
-  }, [user])
+  }, [user, router]);
 
   return (
     <Card className="w-full max-w-md mx-auto">

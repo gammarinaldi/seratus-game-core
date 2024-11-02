@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {    
     try {
-        const { planName, amount, userName, userEmail } = await req.json();
+        const { planName, amount } = await req.json();
         const orderId = planName === "Pro" ? "pro-" + uuidv4().slice(-12) : "pre-" + uuidv4().slice(-12);
         const parameters = {
             transaction_details: {

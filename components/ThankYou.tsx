@@ -20,7 +20,16 @@ export default function ThankYou() {
     const statusCode = searchParams.get('status_code')
     const transactionStatus = searchParams.get('transaction_status')
 
+    useEffect(() => {
+        if (!user) {
+            router.push('/');
+        }
+    }, [user, router]);
+
     if (!orderId) return null
+    if (statusCode !== '200') return <PaymentError orderId={orderId ?? ''} />
+    if (transactionStatus === 'deny') return <PaymentError orderId={orderId ?? ''} />
+    if (transactionStatus === 'pending') return <PricingPlan message="Proceed payment as instructed in the payment page." />
 
     const initializeRoom = () => {
         setIsCreating(true)
@@ -33,16 +42,6 @@ export default function ThankYou() {
             router.push(`/create-quiz`)
         })
     }
-
-    useEffect(() => {
-        if (!user) {
-            router.push('/');
-        }
-    }, [user])
-
-    if (statusCode !== '200') return <PaymentError orderId={orderId ?? ''} />
-    if (transactionStatus === 'deny') return <PaymentError orderId={orderId ?? ''} />
-    if (transactionStatus === 'pending') return <PricingPlan message="Proceed payment as instructed in the payment page." />
 
     return (
         <Card className="w-full max-w-sm">

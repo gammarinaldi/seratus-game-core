@@ -53,7 +53,7 @@ export function Buzzer() {
       });
     });
 
-    socketRef.current.on('disconnect', (reason) => {
+    socketRef.current.on('disconnect', () => {
       setIsDisabled(true);
     });
 
@@ -80,7 +80,7 @@ export function Buzzer() {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [isLoaded, user, connectSocket]);
+  }, [isLoaded, user, connectSocket, router]);
 
   const handleBuzz = async () => {
     try {

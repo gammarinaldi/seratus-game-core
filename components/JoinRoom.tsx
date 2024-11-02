@@ -51,7 +51,7 @@ export function JoinRoom() {
         return () => {
             socketRef.current?.disconnect();
         };
-    }, [connectSocket]);
+    }, [connectSocket, user, router]);
 
     const handleJoin = async () => {
         if (!user) {

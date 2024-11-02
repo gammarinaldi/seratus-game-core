@@ -43,4 +43,5 @@ export interface RoomParams {
     timer?: number;
     status?: string;
     roomId?: string;
+    orderId?: string;
 }

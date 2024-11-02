@@ -127,6 +127,7 @@ export function PricingPlan({ message }: { message: string }) {
                 router.push(`/create-room`);
             } else {
                 const roomData = await insertRoom({
+                    orderId: '',
                     createdBy: user?.emailAddresses[0].emailAddress ?? '',
                     totalPlayers: maxPlayers,
                     totalQuestions: maxQuestions,
@@ -213,7 +214,7 @@ export function PricingPlan({ message }: { message: string }) {
     return () => {
       document.body.removeChild(script)
     }
-  }, [])
+  }, [user, router]);
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4">

@@ -36,7 +36,7 @@ export default function Lobby() {
         console.error('Error getting room ID:', error);
       });
     }
-  }, [isLoaded, user])
+  }, [isLoaded, user, router]);
 
   useEffect(() => {
     const connectSocket = () => {
@@ -85,7 +85,7 @@ export default function Lobby() {
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [roomCode]);
+  }, [roomCode, user, router]);
 
   const handleStartGame = async () => {
     console.log('Starting the game...');
