@@ -156,10 +156,6 @@ export default function Quiz() {
 
         // Check if this was the last question
         if (currentQuestionIndex === questions.length - 1) {
-            toast({
-                title: "Game Over!",
-                description: "Redirecting to leaderboard...",
-            });
             router.push('/leaderboard');
             return;
         }
