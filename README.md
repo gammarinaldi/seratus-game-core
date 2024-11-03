@@ -16,7 +16,7 @@ Welcome to the AI-powered Trivia Quiz App! This app provides a fun, interactive 
 
 -   **Node.js** (v14 or higher)
 -   **Midtrans Account**: Register at [Midtrans](https://midtrans.com/) to obtain your API key for payment processing.
--   **LLM API Key**: Obtain an API key for your AI trivia provider (e.g., Gemini API).
+-   **AI Model API Key**: Obtain an API key for your AI trivia provider (e.g., Gemini API).
 
 ### Installation
 
