@@ -26,12 +26,11 @@ Welcome to the AI-powered Trivia Quiz App! This app provides a fun, interactive 
     `cd seratus-quiz-app `
     
 2.  **Set up environment variables:**  
-    Take a look at `env.local.example`
-    Take a look at `env.production.example`
-    Take a look at `Dockerfile.example`
+    Take a look at `env.local.example`, `env.production.example`, `Dockerfile.example`
 
 3.  **Run with docker:**
     `docker compose up --build`
+    `docker compose -f "docker-compose.prod.yml" up --build` (production)
     
 
 ### Payment Integration
