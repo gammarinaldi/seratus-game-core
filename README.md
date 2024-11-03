@@ -50,7 +50,7 @@ The app integrates with Midtrans to allow secure in-app purchases for premium co
 ## Tech-Stack
 
 -   **Frontend & Backend**: Next.js 14
--  **Game Server**: Socket.IO
+-  **Game Server**: Socket.io
 -   **Database**: MongoDB
 -   **Payment Gateway**: Midtrans for secure transactions
 -   **AI Model**: Gemini Pro
