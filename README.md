@@ -5,8 +5,8 @@ Welcome to the AI-powered Trivia Quiz App! This app provides a fun, interactive 
 
 ## Features
 
--   **AI-Enhanced Questions**: Dynamic and intelligent questions generated or selected by AI to ensure varied and challenging quizzes.
--   **Multiple Categories**: Users can select from various topics like Penalaran Umum, Pemahaman Umum, dan Pengetahuan Kuantitatif.
+-   **AI Generated Questions**: Dynamic and intelligent questions generated or selected by AI to ensure varied and challenging quizzes.
+-   **Multiple Categories**: There are various challenging topics like Penalaran Umum, Pemahaman Umum, dan Pengetahuan Kuantitatif.
 -   **Leaderboards**: Track scores, compare with friends, and aim for top ranks!
 -   **Midtrans Integration**: Easy and secure in-app purchases through the Midtrans payment gateway for premium quizzes or ad-free experiences.
 
