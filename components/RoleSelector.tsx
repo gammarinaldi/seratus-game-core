@@ -4,27 +4,43 @@ import { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from 'next/navigation'
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs"
 import { updateUserField } from '@/app/actions/User'
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from 'lucide-react'
 
 export function RoleSelector() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { user } = useUser()
+  const { toast } = useToast()
 
   const handleRoleSelect = (role: string) => {
     setSelectedRole(role)
   }
 
   const handleNext = async () => {
-    if (user?.id && selectedRole) {
+    if (!user?.id || !selectedRole) return;
+
+    setIsLoading(true)
+    try {
       await updateUserField(user.id, { role: selectedRole as 'host' | 'player' })
-    }
-    
-    if (selectedRole === "host") {
-      router.push('/pricing')
-    } else if (selectedRole === "player") {
-      router.push('/join')
+      
+      if (selectedRole === "host") {
+        router.push('/pricing')
+      } else if (selectedRole === "player") {
+        router.push('/join')
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update role. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -44,6 +60,7 @@ export function RoleSelector() {
           variant={selectedRole === 'host' ? 'default' : 'outline'}
           className="w-full text-lg py-6"
           onClick={() => handleRoleSelect('host')}
+          disabled={isLoading}
         >
           I&apos;m Host
         </Button>
@@ -51,6 +68,7 @@ export function RoleSelector() {
           variant={selectedRole === 'player' ? 'default' : 'outline'}
           className="w-full text-lg py-6"
           onClick={() => handleRoleSelect('player')}
+          disabled={isLoading}
         >
           I&apos;m Player
         </Button>
@@ -59,9 +77,16 @@ export function RoleSelector() {
         <Button
           className="w-full bg-blue-500 hover:bg-blue-600 text-white"
           onClick={handleNext}
-          disabled={!selectedRole}
+          disabled={!selectedRole || isLoading}
         >
-          Next
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            'Next'
+          )}
         </Button>
       </CardFooter>
     </Card>

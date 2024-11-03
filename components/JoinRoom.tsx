@@ -58,8 +58,8 @@ export function JoinRoom() {
             toast({
                 variant: 'destructive',
                 description: "Please login to continue.",
-                duration: 5000,
-                action: <ToastAction altText="Understood">Understood</ToastAction>
+                duration: 3000,
+                action: <ToastAction altText="Okay">Okay</ToastAction>
             });
             return;
         }
@@ -88,8 +88,8 @@ export function JoinRoom() {
                 toast({
                     variant: 'destructive',
                     description: "You've already joined this room.",
-                    duration: 5000,
-                    action: <ToastAction altText="Close">Close</ToastAction>
+                    duration: 3000,
+                    action: <ToastAction altText="Okay">Okay</ToastAction>
                 });
                 return;
             }
@@ -115,8 +115,8 @@ export function JoinRoom() {
                 toast({
                     variant: 'destructive',
                     description: "Failed to connect to the game server. Please try again.",
-                    duration: 5000,
-                    action: <ToastAction altText="Close">Close</ToastAction>
+                    duration: 3000,
+                    action: <ToastAction altText="Okay">Okay</ToastAction>
                 });
             }
         } catch (error) {
@@ -124,8 +124,8 @@ export function JoinRoom() {
             toast({
                 variant: 'destructive',
                 description: "An error occurred while joining the room.",
-                duration: 5000,
-                action: <ToastAction altText="Close">Close</ToastAction>
+                duration: 3000,
+                action: <ToastAction altText="Okay">Okay</ToastAction>
             });
         }
     }

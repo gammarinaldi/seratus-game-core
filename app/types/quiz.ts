@@ -39,6 +39,7 @@ export interface RoomParams {
     createdBy: string;
     totalPlayers?: number;
     totalQuestions?: number;
+    plan?: string;
     players?: Player[];
     timer?: number;
     status?: string;

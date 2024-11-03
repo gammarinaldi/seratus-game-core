@@ -32,23 +32,34 @@ export default function CreateRoom() {
         const loadData = async () => {
             try {
                 const gameSettings = await getQuizData<GameSettings>('gameSettings');
-                if (!gameSettings?.roomId) return;
+                const roomId = gameSettings?.roomId;
+                if (!roomId) {
+                    toast({
+                        variant: 'destructive',
+                        title: "Oops!",
+                        description: "Something went wrong. Please try again.",
+                        duration: 3000,
+                        action: <ToastAction altText="Okay">Okay</ToastAction>,
+                    });
+                    return;
+                }
+                setRoomId(roomId)
 
-                // Get room details from database
-                const data = await fetchRoomById(gameSettings.roomId);
-                setRoomId(gameSettings.roomId)
-                setMaxPlayers(data.totalPlayers)
-                setMaxQuestions(data.totalQuestions)
-
-                // Set local state
-                setRoomCode(data.roomCode)
+                try {
+                    const room = await fetchRoomById(roomId);
+                    setMaxPlayers(room?.totalPlayers)
+                    setMaxQuestions(room?.totalQuestions)
+                    setRoomCode(room?.roomCode)
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
             } catch (error) {
                 console.error('Error loading data:', error);
             }
         };
 
         loadData();
-    }, [user, router])
+    }, [user, router, toast])
 
     const handleCreateRoom = async () => {
         setIsLoading(true);      
@@ -63,7 +74,7 @@ export default function CreateRoom() {
                 title: "Oops!",
                 description: "Something went wrong. Please try again.",
                 duration: 3000,
-                action: <ToastAction altText="Try again" onClick={handleCreateRoom}>Try again</ToastAction>
+                action: <ToastAction altText="Okay" onClick={handleCreateRoom}>Okay</ToastAction>
             });
         } finally {
             setIsLoading(false);

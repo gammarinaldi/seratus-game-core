@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from "./ui/toast"
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getQuizData, setData } from '@/lib/indexeddb'
 import type { Player } from '@/app/types/quiz'
 import { motion, AnimatePresence } from "framer-motion"
@@ -24,7 +23,6 @@ export default function Quiz() {
     const [buzzed, setBuzzed] = useState(false)
     const [buzzer, setBuzzer] = useState('')
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-    const [showRevealDialog, setShowRevealDialog] = useState(false)
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
     const [showCorrectPopup, setShowCorrectPopup] = useState(false)
     const [showIncorrectPopup, setShowIncorrectPopup] = useState(false)
@@ -44,10 +42,10 @@ export default function Quiz() {
         }
 
         if (user && isLoaded) {
-            fetchRoomByCode(roomCode).then(async (data) => {
-                const roomCode = data.roomCode;
+            fetchRoomByCode(roomCode).then(async (room) => {
+                const roomCode = room?.roomCode;
                 try {
-                    const questions = data.questions;
+                    const questions = room?.questions;
                     setQuestions(questions);
                     setCurrentQuestion(questions[currentQuestionIndex]);
                     resetQuestion();
@@ -60,7 +58,7 @@ export default function Quiz() {
                     }
                 } catch (error) {
                     console.error('Error processing questions:', error);
-                    console.error('Questions data causing error:', data.questions);
+                    console.error('Questions data causing error:', room?.questions);
                     toast({
                         variant: "destructive",
                         title: "Error",
@@ -116,11 +114,6 @@ export default function Quiz() {
         setBuzzer('');
     };
 
-    const confirmRevealAnswer = () => {
-        setShowAnswer(true);
-        setShowRevealDialog(false);
-    };
-
     const proceedToNextQuestion = (isCorrect: boolean) => {
         if (isCorrect) {
             const request = indexedDB.open('quiz', 1);
@@ -169,25 +162,27 @@ export default function Quiz() {
         setTimeout(() => {
             setShowCorrectPopup(false);
             setShowIncorrectPopup(false);
-
-            // Update both the index and the current question
-            setCurrentQuestionIndex(prevIndex => {
-                const newIndex = prevIndex + 1;
-                setCurrentQuestion(questions[newIndex]);
-                return newIndex;
-            });
-            
-            // Reset the question state
-            resetQuestion();
-
-            // Emit the start question event for the next question
-            if (socketRef.current) {
-                socketRef.current.emit('startQuestion', {
-                    roomCode: roomCode
-                });
-            }
-        }, 5000);
+        }, 3000);
     };
+
+    const handleNextQuestion = () => {
+        // Update both the index and the current question
+        setCurrentQuestionIndex(prevIndex => {
+            const newIndex = prevIndex + 1;
+            setCurrentQuestion(questions[newIndex]);
+            return newIndex;
+        });
+        
+        // Reset the question state
+        resetQuestion();
+
+        // Emit the start question event for the next question
+        if (socketRef.current) {
+            socketRef.current.emit('startQuestion', {
+                roomCode: roomCode
+            });
+        }
+    }
 
     const handleOptionClick = (option: string, letter: string) => {
         if (!showAnswer) {  // Only allow selection if answer isn't revealed
@@ -231,10 +226,10 @@ export default function Quiz() {
                             if (showAnswer) {
                                 if (isSelected) {
                                     optionStyle = isCorrectAnswer 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : 'bg-red-100 text-red-800';
+                                        ? 'bg-green-700 text-white' 
+                                        : 'bg-red-700 text-white';
                                 } else if (isCorrectAnswer) {
-                                    optionStyle = 'bg-green-100 text-green-800';
+                                    optionStyle = 'bg-green-700 text-white';
                                 }
                             }
 
@@ -257,32 +252,9 @@ export default function Quiz() {
                             <span>Waiting for buzz...</span>
                         )}
                     </div>
+                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={handleNextQuestion}>Next Question</Button>
                 </CardContent>
             </Card>
-
-            <Dialog open={showRevealDialog} onOpenChange={setShowRevealDialog}>
-                <DialogContent className="max-w-xs rounded-md">
-                    <DialogHeader>
-                        <DialogTitle>Confirm Reveal Answer</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to reveal the answer? This cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowRevealDialog(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={confirmRevealAnswer}
-                        >
-                            Reveal Answer
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             <AnimatePresence>
                 {showCorrectPopup && (
@@ -329,7 +301,7 @@ export default function Quiz() {
                         >
                         <XCircle className="w-12 h-12 text-red-500 mb-2" />
                         </motion.div>
-                        <h2 className="text-3xl font-bold text-red-600 mb-2">Incorrect</h2>
+                        <h2 className="text-3xl font-bold text-red-600 mb-2">Wrong</h2>
                         <div className="flex items-baseline">
                         <span className="text-4xl font-extrabold text-gray-700">Try Again!</span>
                         </div>

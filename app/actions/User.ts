@@ -1,17 +1,21 @@
+'use server'
+
+import clientPromise from "@/lib/mongodb";
+
 export const fetchUserByClerkId = async (clerkId: string) => {
   try {
-    const response = await fetch('/api/user?clerkId=' + clerkId, {
-      method: 'GET',
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user details')
+    if (!clerkId) {
+        throw new Error('Clerk ID is required');
     }
 
-    const userData = await response.json()
-    return userData
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB_NAME as string);
+    const userData = await db.collection('users').findOne({ clerkUserId: clerkId });
+
+    return userData;
   } catch (error) {
-    console.error('Error fetching user details:', error)
+    console.error('Error fetching user details:', error);
+    throw error;
   }
 }
 
@@ -22,19 +26,22 @@ interface UserUpdateData {
 }
 
 export const updateUserField = async (userId: string, updateData: Partial<UserUpdateData>) => {
-    try {        
-        const response = await fetch('/api/user', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId, ...updateData }),
-        });
+  try {
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB_NAME as string);
+    const result = await db.collection('users').updateOne(
+        { clerkUserId: userId },
+        { $set: updateData }
+    );
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('[updateUserField] Error:', error);
-        throw error;
+    if (result.matchedCount === 1 && result.modifiedCount === 0) {
+        console.log('User does not need to be updated');
+        return;
     }
+
+    return result;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
 }

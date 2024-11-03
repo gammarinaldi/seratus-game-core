@@ -5,42 +5,86 @@ import { CheckCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { useSearchParams } from 'next/navigation'
-import PaymentError from './PaymentError'
 import { useUser } from "@clerk/nextjs"
 import { PricingPlan } from './PricingPlan'
-import { insertRoom } from '@/app/actions/Room'
+import { createRoom, fetchRoomByCreatedBy } from '@/app/actions/Room'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@radix-ui/react-toast'
+import PaymentError from './PaymentError'
+import { setData } from '@/lib/indexeddb'
 
 export default function ThankYou() {
-    const { user } = useUser()
+    const { user, isLoaded } = useUser()
     const searchParams = useSearchParams()
     const router = useRouter()
     const [isCreating, setIsCreating] = useState(false)
     const orderId = searchParams.get('order_id')
     const statusCode = searchParams.get('status_code')
     const transactionStatus = searchParams.get('transaction_status')
+    const { toast } = useToast()    
 
     useEffect(() => {
-        if (!user) {
+        if (isLoaded && !user) {
             router.push('/');
         }
-    }, [user, router]);
+    }, [user, router, isLoaded]);
 
-    if (!orderId) return null
+    if (!orderId) return <PaymentError orderId={orderId ?? ''} />
     if (statusCode !== '200') return <PaymentError orderId={orderId ?? ''} />
     if (transactionStatus === 'deny') return <PaymentError orderId={orderId ?? ''} />
     if (transactionStatus === 'pending') return <PricingPlan message="Proceed payment as instructed in the payment page." />
 
-    const initializeRoom = () => {
+    const handleCreateQuiz = async () => {
         setIsCreating(true)
-        insertRoom({
-          orderId: orderId ?? '',
-          createdBy: user?.emailAddresses[0].emailAddress ?? '',
-        }).then((data) => {
-            const roomId = data._id.toString()
-            localStorage.setItem('roomId', roomId)
-            router.push(`/create-quiz`)
-        })
+        const room = await fetchRoomByCreatedBy(user?.emailAddresses[0].emailAddress ?? '', 'waiting');
+        if (room) {
+            router.push(`/create-room`);
+            return;
+        }
+
+        const planName = orderId.split('-')[0]
+        let maxPlayers = 0
+        let maxQuestions = 0
+
+        if (planName === "pro") {
+            maxPlayers = 20
+            maxQuestions = 15
+        } else {
+            maxPlayers = 60
+            maxQuestions = 30
+        }
+
+        try{
+            const roomData = await createRoom({
+              createdBy: user?.emailAddresses[0].emailAddress ?? '',
+              totalPlayers: maxPlayers,
+              totalQuestions: maxQuestions,
+              plan: planName,
+              orderId,
+            });
+  
+            if (roomData) {
+              const roomId = roomData._id.toString();
+              const roomCode = roomData.roomCode;
+              await setData('gameSettings', {
+                roomId,
+                roomCode,
+                maxPlayers,
+                maxQuestions,
+              });
+            }
+
+            router.push(`/create-room`);
+          } catch (error) {
+            console.error('Error in handlePlanClick:', error);
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to create room",
+                action: <ToastAction altText="Okay">Okay</ToastAction>,
+            });
+        }
     }
 
     return (
@@ -59,7 +103,7 @@ export default function ThankYou() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
                 <Button 
-                    onClick={initializeRoom} 
+                    onClick={handleCreateQuiz} 
                     disabled={isCreating} 
                     className="w-full"
                 >

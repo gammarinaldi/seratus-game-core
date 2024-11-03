@@ -1,3 +1,5 @@
+'use server'
+
 import nodemailer from 'nodemailer';
 import type { Question } from '@/app/types/quiz';
 

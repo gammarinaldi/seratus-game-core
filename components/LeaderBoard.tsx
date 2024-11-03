@@ -6,50 +6,65 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { getQuizData } from '@/lib/indexeddb'
 import { Crown } from "lucide-react"
-import { updateRoomDetails } from '@/app/actions/Room';
+import { updateRoomStatus } from '@/app/actions/Room';
 import { GameSettings, Player } from '@/app/types/quiz';
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@radix-ui/react-toast'
 
 export default function LeaderBoardComponent() {
     const router = useRouter();
     const [players, setPlayers] = useState<Player[]>([]);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchPlayers = async () => {
             try {
                 const gameSettings = await getQuizData<GameSettings>('gameSettings');
-                if (!gameSettings?.roomId) {
-                    console.error('No room ID found in gameSettings');
+                const roomId = gameSettings?.roomId;
+                if (!roomId) {
+                    toast({
+                        title: 'Something went wrong',
+                        description: 'Please try again.',
+                        duration: 3000,
+                        variant: 'destructive',
+                        action: <ToastAction altText="Okay">Okay</ToastAction>,
+                    })
                     return;
                 }
 
                 const players = await getQuizData<Player[]>('players');
-                if (!players) return;
+                if (!players) {
+                    toast({
+                        title: 'Something went wrong',
+                        description: 'Please try again.',
+                        duration: 3000,
+                        variant: 'destructive',
+                        action: <ToastAction altText="Okay">Okay</ToastAction>,
+                    })
+                    console.error('No players found');
+                    return;
+                }
 
                 const sortedPlayers = players.sort((a, b) => b.score - a.score);
                 setPlayers(sortedPlayers);
 
-                console.log('Updating room with ID:', gameSettings.roomId);
+                const mappedPlayers = sortedPlayers.map((player, index) => ({
+                    id: player.id,
+                    name: player.name,
+                    email: player.email,
+                    score: player.score || 0,
+                    rank: index + 1,
+                    timestamp: player.timestamp || Date.now()
+                }));
 
-                // Update room details
-                await updateRoomDetails({
-                    roomId: gameSettings.roomId,
-                    players: sortedPlayers.map((player, index) => ({
-                        id: player.id,
-                        name: player.name,
-                        email: player.email,
-                        score: player.score || 0,
-                        rank: index + 1,
-                        timestamp: player.timestamp || Date.now()
-                    })),
-                    status: 'done'
-                });
+                await updateRoomStatus(roomId, 'done', mappedPlayers);
             } catch (error) {
                 console.error('Error in fetchPlayers:', error);
             }
         };
 
         fetchPlayers();
-    }, []);
+    }, [toast]);
 
     return (
         <Card className="w-full max-w-xs mx-auto mt-10">

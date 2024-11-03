@@ -1,6 +1,8 @@
+'use server'
+
 import { currentUser } from "@clerk/nextjs/server";
-import clientPromise from "@/lib/mongodb";
 import { User } from '@/app/types/user';
+import clientPromise from "@/lib/mongodb";
 
 export const checkUser = async (): Promise<User | null> => {
   console.log("Starting checkUser function");
@@ -15,9 +17,7 @@ export const checkUser = async (): Promise<User | null> => {
 
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB_NAME as string);
-    const usersCollection = db.collection('users');
-    
-    const loggedInUser = await usersCollection.findOne({ clerkUserId: user.id });
+    const loggedInUser = await db.collection('users').findOne({ clerkUserId: user.id });
 
     if (loggedInUser) {
       // Convert MongoDB document to User type
@@ -44,7 +44,7 @@ export const checkUser = async (): Promise<User | null> => {
       updatedAt: new Date()
     };
 
-    const result = await usersCollection.insertOne(newUserDoc);
+    const result = await db.collection('users').insertOne(newUserDoc);
     
     // Create User type with string _id for our application
     const createdUser: User = {
