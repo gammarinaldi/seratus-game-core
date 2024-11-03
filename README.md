@@ -48,14 +48,13 @@ The app integrates with Midtrans to allow secure in-app purchases for premium co
 3.  **Upgrade to Premium**: Access more quizzes or remove ads by making in-app purchases via Midtrans.
 4.  **Track Progress (TODO)**: Check the leaderboard and challenge friends to improve your ranking.
 
-## Technologies Used
+## Tech-Stack
 
--   **Frontend**: Next.js 14
--   **Backend**: Next.js 14
--  **Game Server**: Websocket in Node.js
+-   **Frontend & Backend**: Next.js 14
+-  **Game Server**: Socket.IO
 -   **Database**: MongoDB
 -   **Payment Gateway**: Midtrans for secure transactions
--   **AI Integration**: Gemini API
+-   **AI Model**: Gemini Pro
 
 ## Contributing
 
