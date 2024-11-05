@@ -180,7 +180,7 @@ export function PricingPlan({ message }: { message: string }) {
         }
       } else {
         try {
-          const response = await fetch("/api/payment-gateway/midtrans", {
+          const response = await fetch("/api/midtrans", {
               method: "POST",
               headers: {
                   'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export function PricingPlan({ message }: { message: string }) {
           const requestData = await response.json();
           window.snap.pay(requestData.token);
           window.snap.onSuccess = function(result: MidtransResult) {
-              console.log('Transaction success:', result);
+            console.log('Transaction success:', result);
           }
         } catch (error) {
           console.error('Error:', error);
