@@ -47,9 +47,9 @@ export function Buzzer() {
       toast({
         variant: 'destructive',
         title: "Connection Error",
-        description: "Failed to connect to game server. Retrying...",
+        description: "Gagal terhubung ke server game. Mencoba lagi...",
         duration: 3000,
-        action: <ToastAction altText="Understood">Understood</ToastAction>
+        action: <ToastAction altText="Oke">Oke</ToastAction>
       });
     });
 
@@ -106,9 +106,9 @@ export function Buzzer() {
       toast({
         variant: 'destructive',
         title: "Connection Error",
-        description: "Failed to send buzz. Please check your connection and try again.",
+        description: "Gagal mengirim buzzer. Silakan periksa koneksi Anda dan coba lagi.",
         duration: 3000,
-        action: <ToastAction altText="Understood">Understood</ToastAction>
+        action: <ToastAction altText="Oke">Oke</ToastAction>
       });
     }
   };
@@ -119,7 +119,7 @@ export function Buzzer() {
 
   return (
     <div className="w-64 h-96 bg-white p-4 flex flex-col items-center">
-      <h2 className="text-lg font-semibold mb-4">Be the first to answer!</h2>
+      <h2 className="text-lg font-semibold mb-4">Jadilah yang pertama menjawab!</h2>
       <Button
         className={`w-64 h-64 rounded-full text-4xl font-bold transition-all duration-200 transform hover:scale-105 shadow-lg ${
           isBuzzed

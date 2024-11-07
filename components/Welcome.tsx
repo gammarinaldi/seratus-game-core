@@ -7,22 +7,19 @@ export function Welcome() {
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">
-          Welcome to Seratus
+          Selamat Datang di Seratus Quiz
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-center text-muted-foreground">
-          AI-Powered Trivia Quiz
-        </p>
-        <p className="text-center text-muted-foreground">
-          Let&apos;s create some fun!
+          Buktikan kalo kamu bukan SDM rendah!
         </p>
       </CardContent>
       <CardFooter>
         <SignedOut>
           <SignInButton mode="modal">
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-              Sign In to Get Started
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+              Login dulu
             </Button>
           </SignInButton>
         </SignedOut>

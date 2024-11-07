@@ -3,9 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Header } from "@/components/Header";
-import { ClientQuizProvider } from "@/components/ClientQuizProvider";
 import { Toaster } from "@/components/ui/toaster"
 import Footer from "@/components/Footer"
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -29,15 +29,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" className="h-full">
+    <ClerkProvider afterSignOutUrl={process.env.NEXT_PUBLIC_AFTER_SIGN_OUT_URL!}>
+      <html lang="en" style={{ colorScheme: 'light', height: '100%' }} className="light">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-full`}>
-          <ClientQuizProvider>
-              <Header />
-              <main className="flex-1 flex flex-col">{children}</main>
-              <Footer />
-              <Toaster />
-          </ClientQuizProvider>
+          <Header />
+          <main className="flex-1 flex flex-col">{children}</main>
+          <Footer />
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

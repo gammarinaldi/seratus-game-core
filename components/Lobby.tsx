@@ -144,15 +144,15 @@ export default function Lobby() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <h2 className="text-sm font-medium text-center">Players</h2>
+            <h2 className="text-sm font-medium text-center">Pemain</h2>
             <div className="text-2xl font-bold text-center">
               {players.length}/{totalPlayers}
             </div>
           </div>
           <p className="text-sm text-center text-muted-foreground">
             {players.length === 0 
-              ? "Waiting for players to join..." 
-              : "Ready to start the game!"}
+              ? "Menunggu pemain untuk bergabung..." 
+              : "Siap untuk memulai game!"}
           </p>
           <div className="bg-gray-100 p-2 rounded max-h-40 overflow-y-auto">
             <ul className="list-none space-y-1">
@@ -169,11 +169,11 @@ export default function Lobby() {
         </CardContent>
         <CardFooter>
           <Button
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
             onClick={() => setShowConfirmation(true)}
             disabled={isStartButtonDisabled()}
           >
-            {isStartButtonDisabled() ? 'Waiting for Players...' : 'Start Game'}
+            {isStartButtonDisabled() ? 'Menunggu pemain...' : 'Mulai Game'}
           </Button>
         </CardFooter>
       </Card>
@@ -181,9 +181,9 @@ export default function Lobby() {
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="w-full max-w-xs mx-auto mt-4 rounded-lg">
           <DialogHeader>
-            <DialogTitle>Start Game</DialogTitle>
+            <DialogTitle>Mulai Game</DialogTitle>
           </DialogHeader>
-          <p>Are you sure you want to start the game with {players.length} players?</p>
+          <p>Apakah kamu yakin ingin memulai game dengan {players.length} pemain?</p>
           <DialogFooter>
             <Button variant="outline" className="mt-4" onClick={() => setShowConfirmation(false)}>
               Cancel

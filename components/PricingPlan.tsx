@@ -53,33 +53,11 @@ const plans = [
     name: "Basic",
     price: 0,
     priceText: "Free",
-    maxPlayers: 6,
-    maxQuestions: 9,
+    maxPlayers: 1000,
+    maxQuestions: 50,
     features: [
-      { name: "Up to 6 players", included: true },
-      { name: "9 questions", included: true },
-    ],
-  },
-  {
-    name: "Pro",
-    price: 25000,
-    priceText: "25rb",
-    maxPlayers: 20,
-    maxQuestions: 15,
-    features: [
-      { name: "Up to 20 players", included: true },
-      { name: "15 questions", included: true },
-    ],
-  },
-  {
-    name: "Premium",
-    price: 75000,
-    priceText: "75rb",
-    maxPlayers: 60,
-    maxQuestions: 30,
-    features: [
-      { name: "Up to 60 players", included: true },
-      { name: "30 questions", included: true },
+      { name: "Up to 1000 pemain", included: true },
+      { name: "50 pertanyaan", included: true },
     ],
   },
 ]
@@ -143,7 +121,7 @@ export function PricingPlan({ message }: { message: string }) {
     try {
       const room = await fetchRoomByCreatedBy(user.emailAddresses[0].emailAddress, 'waiting');
       if (room) {
-          router.push(`/create-room`);
+          router.push(`/lobby`);
           return;
       }
 
@@ -225,8 +203,8 @@ export function PricingPlan({ message }: { message: string }) {
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4">
-      <h2 className="text-3xl font-bold text-center mb-2">Choose Plan</h2>
-      <p className="text-center text-muted-foreground mb-6">Pay per Quiz</p>
+      <h2 className="text-3xl font-bold text-center mb-2">Pilih Paket</h2>
+      <p className="text-center text-muted-foreground mb-6">Masih Gratis!</p>
       {loading && <p className="text-center">Loading...</p>}
       <div className="space-y-6">
         {plans.map((plan) => (

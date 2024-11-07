@@ -23,11 +23,11 @@ export default function LeaderBoardComponent() {
                 const roomId = gameSettings?.roomId;
                 if (!roomId) {
                     toast({
-                        title: 'Something went wrong',
-                        description: 'Please try again.',
+                        title: 'Terjadi kesalahan',
+                        description: 'Silakan coba lagi.',
                         duration: 3000,
                         variant: 'destructive',
-                        action: <ToastAction altText="Okay">Okay</ToastAction>,
+                        action: <ToastAction altText="Oke">Oke</ToastAction>,
                     })
                     return;
                 }
@@ -35,11 +35,11 @@ export default function LeaderBoardComponent() {
                 const players = await getQuizData<Player[]>('players');
                 if (!players) {
                     toast({
-                        title: 'Something went wrong',
-                        description: 'Please try again.',
+                        title: 'Terjadi kesalahan',
+                        description: 'Silakan coba lagi.',
                         duration: 3000,
                         variant: 'destructive',
-                        action: <ToastAction altText="Okay">Okay</ToastAction>,
+                        action: <ToastAction altText="Oke">Oke</ToastAction>,
                     })
                     console.error('No players found');
                     return;
@@ -119,7 +119,7 @@ export default function LeaderBoardComponent() {
                         className="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white"
                         onClick={() => router.push('/')}
                     >
-                        Create Another Quiz
+                        Bikin Quiz Baru
                     </Button>
                 </div>
             </CardContent>

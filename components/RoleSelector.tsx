@@ -75,7 +75,7 @@ export function RoleSelector() {
       </CardContent>
       <CardFooter>
         <Button
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
           onClick={handleNext}
           disabled={!selectedRole || isLoading}
         >

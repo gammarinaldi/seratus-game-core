@@ -62,7 +62,7 @@ export default function Quiz() {
                     toast({
                         variant: "destructive",
                         title: "Error",
-                        description: "Failed to load questions. Please try again.",
+                        description: "Gagal memuat pertanyaan. Silakan coba lagi.",
                     });
                 }
             }).catch(error => {
@@ -70,7 +70,7 @@ export default function Quiz() {
                 toast({
                     variant: "destructive",
                     title: "Error",
-                    description: "Failed to fetch room data. Please try again.",
+                    description: "Gagal mengambil data room. Silakan coba lagi.",
                 });
             });
         }
@@ -122,8 +122,8 @@ export default function Quiz() {
                 toast({
                     variant: "destructive",
                     title: "Error",
-                    description: "Failed to update score. Please try again.",
-                    action: <ToastAction altText="Understood">Understood</ToastAction>
+                    description: "Gagal memperbarui skor. Silakan coba lagi.",
+                    action: <ToastAction altText="Oke">Oke</ToastAction>
                 });
             };
 
@@ -249,10 +249,10 @@ export default function Quiz() {
                         {buzzed ? (
                             <span className="font-bold">{buzzer} buzzed in!</span>
                         ) : (
-                            <span>Waiting for buzz...</span>
+                            <span>Menunggu pemain untuk menjawab...</span>
                         )}
                     </div>
-                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={handleNextQuestion}>Next Question</Button>
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white" onClick={handleNextQuestion}>Pertanyaan Selanjutnya</Button>
                 </CardContent>
             </Card>
 
@@ -273,10 +273,10 @@ export default function Quiz() {
                         >
                         <Sparkles className="w-12 h-12 text-yellow-400 mb-2" />
                         </motion.div>
-                        <h2 className="text-3xl font-bold text-green-600 mb-2">Correct!</h2>
+                        <h2 className="text-3xl font-bold text-green-600 mb-2">Benar!</h2>
                         <div className="flex items-baseline">
                         <span className="text-5xl font-extrabold text-indigo-600">+10</span>
-                        <span className="text-2xl font-semibold text-indigo-400 ml-1">points</span>
+                        <span className="text-2xl font-semibold text-indigo-400 ml-1">poin</span>
                         </div>
                     </CardContent>
                     </Card>
@@ -301,9 +301,9 @@ export default function Quiz() {
                         >
                         <XCircle className="w-12 h-12 text-red-500 mb-2" />
                         </motion.div>
-                        <h2 className="text-3xl font-bold text-red-600 mb-2">Wrong</h2>
+                        <h2 className="text-3xl font-bold text-red-600 mb-2">Salah!</h2>
                         <div className="flex items-baseline">
-                        <span className="text-4xl font-extrabold text-gray-700">Try Again!</span>
+                        <span className="text-4xl font-extrabold text-gray-700">Coba Lagi!</span>
                         </div>
                     </CardContent>
                     </Card>
